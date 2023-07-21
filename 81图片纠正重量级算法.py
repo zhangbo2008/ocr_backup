@@ -425,6 +425,62 @@ def inference(class_names,  granularity, input_img):
 
     a= demo.run_on_image2(img, class_names)
 
+
+
+    #==========对a的每一个图像进行透视变换.
+    a=[i['segmentation'].view(dtype=np.uint8) for i in a]
+
+
+    if 0:
+        1
+    #======保存成图片,再opencv方法.
+    for j in a:
+        cv2.imwrite('tmp.png',j)
+        a=cv2.imread('tmp.png')
+        print(1)
+        kernel = np.ones((1, 5), np.uint8)
+        import imutils
+        gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)  
+        ret, binary = cv2.threshold(gray,0,255,cv2.THRESH_BINARY+cv2.THRESH_TRIANGLE) 
+        cv2.imwrite("img2.png", binary)   
+        binary = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel, anchor=(2, 0), iterations=2) # 二值化.
+        contours = cv2.findContours(binary,cv2.RETR_CCOMP  ,cv2.CHAIN_APPROX_SIMPLE)  # 参数说明;https://docs.opencv.org/4.0.0/d3/dc0/group__imgproc__shape.html#ga819779b9857cc2f8601e6526a3a5bc71 
+        contours = imutils.grab_contours(contours) #适配cv2各个版本.
+        contours = sorted(contours, key = cv2.contourArea, reverse = True)[0]
+        # binary=cv2.drawContours(img,contours,-1,(0,255,255),1)  
+        # cv2.imwrite("img.png", binary)
+
+
+
+
+        epsilon = 0.02 * cv2.arcLength(contours, True)
+        approx = cv2.approxPolyDP(contours, epsilon, True)
+        n = []
+        for x, y in zip(approx[:, 0, 0], approx[:, 0, 1]):
+            n.append((x, y))
+        n = sorted(n)
+        sort_point = []
+        n_point1 = n[:2]
+        n_point1.sort(key=lambda x: x[1])
+        sort_point.extend(n_point1)
+        n_point2 = n[2:4]
+        n_point2.sort(key=lambda x: x[1])
+        n_point2.reverse()
+        sort_point.extend(n_point2)
+        p1 = np.array(sort_point, dtype=np.float32)
+        h = sort_point[1][1] - sort_point[0][1]
+        w = sort_point[2][0] - sort_point[1][0]
+        pts2 = np.array([[0, 0], [0, h], [w, h], [w, 0]], dtype=np.float32)
+
+        M = cv2.getPerspectiveTransform(p1, pts2)
+        dst = cv2.warpPerspective(image, M, (w, h))
+        cv2.imwrite('dst.png',dst)
+        print(1)
+
+
+
+
+
     return a
 
 #==========开始调试模型
