@@ -3,7 +3,7 @@ paddle ocr :   https://gitee.com/paddlepaddle/PaddleOCR/blob/release/2.6/doc/doc
 
 
 
-
+81修复算法.py 很重量级. 很慢. 并且修正后的图片不唯一.因为指向检测跟北京的抠图经常会多. 需要后续再ocr效果去除即可. 总体来说太重. sam模型1个多g. 结束了. 干了一周多这个算法.
 
 
 
